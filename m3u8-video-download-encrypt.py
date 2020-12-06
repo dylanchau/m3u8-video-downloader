@@ -5,7 +5,7 @@ from Crypto.Cipher import AES
 
 def get_decrypt_key(key_url_pattern, m3u8_content):
     k = re.compile(key_url_pattern)
-    
+
     key_url = k.findall(m3u8_content.text)[0]
     key_content = requests.get(key_url).content
 
@@ -43,24 +43,49 @@ def download_ts(ts_urls, decrypt_key, save_path):
             f.write(decrypt_key.decrypt(ts))
 
 
+def download_video_from_direct_url(vid_url, file_name):
+    print(f'{file_name} is downloading...')
+    content = requests.get(vid_url).content
+
+    with open(f'./videos/{file_name}.mp4', 'ab') as f:
+        f.write(content)
+
+
 if __name__ == "__main__":
-    m3u8_link = input('The M3U8 URL:')
-    save_path = input('The video name:')
+    message = '''
+    1. Download video from M3U8 URL with encryption
+    2. Download video from direct URL
 
-    text = requests.get(m3u8_link)
-
-    ''' 
-        complie the pattern URI of script used to decrypt and encrypt
-        E.g. http://decrypt_encrypt_script.[bin|key|...]. https://.*?\.bin
+    Your choice: 
     '''
-    decrypt_script = get_decrypt_key(r'https://.*?\.bin', text)
 
-    ''' 
-        complie the pattern of videos link
-        E.g. http://video_1.[html|ts|...]. https://.*?\.html
-    '''
-    ts_links = get_ts_list(r'https://.*?\.html', text)
+    choice = int(input(message))
 
-    download_ts(ts_links, decrypt_script, save_path)
+    if choice == 1:
 
-    print(f'{save_path} download completed')
+        m3u8_link = input('The M3U8 URL:')
+        save_path = input('The video name:')
+
+        text = requests.get(m3u8_link)
+
+        ''' 
+            complie the pattern URI of script used to decrypt and encrypt
+            E.g. http://decrypt_encrypt_script.[bin|key|...]. https://.*?\.bin
+        '''
+        decrypt_script = get_decrypt_key(r'https://.*?\.bin', text)
+
+        ''' 
+            complie the pattern of videos link
+            E.g. http://video_1.[html|ts|...]. https://.*?\.html
+        '''
+        ts_links = get_ts_list(r'https://.*?\.html', text)
+
+        download_ts(ts_links, decrypt_script, save_path)
+
+    elif choice == 2:
+        vid_url = input('Video URL: ')
+        file_name = input('The video name: ')
+
+        download_video_from_direct_url(vid_url, file_name)
+
+    print('Download completed')
